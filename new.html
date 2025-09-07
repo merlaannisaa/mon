@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MON COEUR🦦</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        font-family: Arial, sans-serif;
+        background: radial-gradient(
+          ellipse at bottom,
+          #1b2735 0%,
+          #090a0f 100%
+        );
+        color: white;
+      }
+
+      /* Canvas bintang */
+      #starCanvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+        pointer-events: none;
+      }
+
+      /* Gallery */
+      .gallery-wrapper {
+        overflow: hidden;
+        width: 100%;
+        margin-top: 80px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        z-index: 1;
+        position: relative;
+      }
+      .gallery-row {
+        display: flex;
+        gap: 8px;
+        animation: scroll 40s linear infinite;
+      }
+      .gallery-row.reverse {
+        animation-direction: reverse;
+      }
+      .gallery-item {
+        flex: 0 0 auto;
+        width: 180px;
+        height: 120px;
+        cursor: pointer;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #111;
+        transition: transform 0.3s;
+      }
+      .gallery-item img,
+      .gallery-item video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s;
+      }
+      .gallery-item:hover img,
+      .gallery-item:hover video {
+        transform: scale(1.05);
+      }
+      @keyframes scroll {
+        0% {
+          transform: translateX(0);
+        }
+        100% {
+          transform: translateX(-50%);
+        }
+      }
+
+      /* Tombol */
+      .button-container {
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 10px;
+        z-index: 10;
+      }
+      .love-button {
+        font-size: 32px;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        position: relative;
+        color: white;
+        padding: 0;
+        transition: transform 0.3s;
+      }
+      .love-button:hover {
+        transform: scale(1.2);
+      }
+      .love-button::after {
+        content: "Open Me";
+        position: absolute;
+        bottom: -25px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #ff4081;
+        color: white;
+        padding: 4px 10px;
+        border-radius: 8px;
+        font-size: 12px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s;
+        white-space: nowrap;
+      }
+      .love-button:hover::after {
+        opacity: 1;
+      }
+      .music-button {
+        background: #4caf50;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 20px;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+        transition: background 0.3s;
+      }
+      .music-button:hover {
+        background: #66bb6a;
+      }
+
+      /* Popup fullscreen */
+      .popup {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.85);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.4s;
+        z-index: 9999;
+      }
+      .popup.active {
+        opacity: 1;
+        pointer-events: auto;
+      }
+      .popup .popup-content {
+        border-radius: 10px;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #000;
+        opacity: 0;
+        transform: scale(0.8);
+        transition: opacity 0.4s ease, transform 0.4s ease;
+        z-index: 10000;
+      }
+      .popup.active .popup-content {
+        opacity: 1;
+        transform: scale(1);
+      }
+      .popup .popup-content img,
+      .popup .popup-content video {
+        display: block;
+        width: auto;
+        height: auto;
+        max-width: 95vw;
+        max-height: 95vh;
+      }
+      .popup-close {
+        position: absolute;
+        top: 10px;
+        right: 15px;
+        color: #fff;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        z-index: 10001;
+      }
+
+      /* Navigasi tombol */
+      .nav-btn {
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        background: rgba(0, 0, 0, 0.6);
+        color: white;
+        border: none;
+        font-size: 32px;
+        padding: 10px 15px;
+        cursor: pointer;
+        border-radius: 5px;
+        z-index: 10002;
+      }
+      #prevBtn {
+        left: 10px;
+      }
+      #nextBtn {
+        right: 10px;
+      }
+      .nav-btn:hover {
+        background: rgba(0, 0, 0, 0.8);
+      }
+
+      /* Popup Love Letter */
+      #letterPopup .popup-content {
+        max-width: 500px;
+        width: 90%;
+        max-height: 80%;
+        background: linear-gradient(145deg, #fff8e7, #ffeedd);
+        border: 3px solid #ffb6c1;
+        border-radius: 15px;
+        padding: 25px 35px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+        font-family: "Dancing Script", cursive, "Courier New", monospace;
+        font-size: 20px;
+        line-height: 2;
+        color: #333;
+        position: relative;
+        white-space: pre-wrap;
+        text-align: left;
+        transform: rotateX(0deg);
+        perspective: 600px;
+        animation: popupOpen 0.6s ease forwards;
+      }
+      #letterPopup .popup-close {
+        top: 10px;
+        right: 15px;
+        font-size: 28px;
+        color: #ff4081;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+      }
+      @keyframes popupOpen {
+        0% {
+          transform: rotateX(-90deg) scale(0.7);
+          opacity: 0;
+        }
+        100% {
+          transform: rotateX(0deg) scale(1);
+          opacity: 1;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .gallery-item {
+          width: 120px;
+          height: 80px;
+        }
+        .music-button {
+          font-size: 14px;
+          padding: 8px 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="starCanvas"></canvas>
+
+    <div class="button-container">
+      <button class="love-button" id="loveBtn">📩</button>
+      <button class="music-button" id="musicBtn">🎵 Play Music</button>
+    </div>
+
+    <audio id="bgMusic" loop><source src="music.mp3" type="audio/mp3" /></audio>
+
+    <div class="gallery-wrapper">
+      <div class="gallery-row" id="row1"></div>
+      <div class="gallery-row reverse" id="row2"></div>
+      <div class="gallery-row" id="row3"></div>
+      <div class="gallery-row reverse" id="row4"></div>
+      <div class="gallery-row" id="row5"></div>
+    </div>
+
+    <!-- Media Popup -->
+    <div class="popup" id="popup">
+      <span class="popup-close" id="popup-close">&times;</span>
+      <div class="popup-content" id="popup-content"></div>
+      <button id="prevBtn" class="nav-btn">&lt;</button>
+      <button id="nextBtn" class="nav-btn">&gt;</button>
+    </div>
+
+    <!-- Love Letter Popup -->
+    <div class="popup" id="letterPopup">
+      <span class="popup-close" id="letterClose">&times;</span>
+      <div class="popup-content" id="letterContent">
+        <p id="letterText"></p>
+      </div>
+    </div>
+
+    <script>
+      // ===== Stars =====
+      const canvas = document.getElementById("starCanvas");
+      const ctx = canvas.getContext("2d");
+      let stars = [],
+        shootingStars = [];
+      function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      window.addEventListener("resize", resizeCanvas);
+      resizeCanvas();
+      for (let i = 0; i < 150; i++) {
+        stars.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          radius: Math.random() * 1.5 + 0.5,
+          alpha: Math.random(),
+          delta: Math.random() * 0.02 + 0.005,
+        });
+      }
+      function createShootingStar() {
+        shootingStars.push({
+          x: Math.random() * canvas.width,
+          y: (Math.random() * canvas.height) / 2,
+          len: Math.random() * 80 + 10,
+          speed: Math.random() * 10 + 6,
+          angle: Math.PI / 4,
+          alpha: 1,
+        });
+      }
+      function drawStars() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for (let s of stars) {
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.radius, 0, Math.PI * 2);
+          let glow = ctx.createRadialGradient(
+            s.x,
+            s.y,
+            s.radius / 2,
+            s.x,
+            s.y,
+            s.radius * 3
+          );
+          glow.addColorStop(0, "rgba(255,255,255," + s.alpha + ")");
+          glow.addColorStop(1, "rgba(255,255,255,0)");
+          ctx.fillStyle = glow;
+          ctx.fill();
+          s.alpha += s.delta;
+          if (s.alpha > 1 || s.alpha < 0) s.delta *= -1;
+        }
+        for (let i = shootingStars.length - 1; i >= 0; i--) {
+          let star = shootingStars[i];
+          ctx.beginPath();
+          ctx.moveTo(star.x, star.y);
+          ctx.lineTo(
+            star.x - star.len * Math.cos(star.angle),
+            star.y - star.len * Math.sin(star.angle)
+          );
+          ctx.strokeStyle = `rgba(255,255,255,${star.alpha})`;
+          ctx.shadowColor = "rgba(255,255,255,0.8)";
+          ctx.shadowBlur = 8;
+          ctx.lineWidth = 2;
+          ctx.stroke();
+          ctx.shadowBlur = 0;
+          star.x += star.speed * Math.cos(star.angle);
+          star.y += star.speed * Math.sin(star.angle);
+          star.alpha -= 0.02;
+          if (star.alpha <= 0) shootingStars.splice(i, 1);
+        }
+        requestAnimationFrame(drawStars);
+      }
+      setInterval(createShootingStar, 2000 + Math.random() * 2000);
+      drawStars();
+
+      // ===== Gallery =====
+      const mediaItems = [
+        "1.JPG",
+        "36.JPG",
+        "37.JPG",
+        "38.JPG",
+        "39.JPG",
+        "40.JPG",
+        "41.JPG",
+        "42.JPG",
+        "43.JPG",
+        "44.JPG",
+        "2.JPG",
+        "3.JPG",
+        "4.JPG",
+        "6.JPG",
+        "7.JPG",
+        "8.JPG",
+        "9.JPG",
+        "10.JPG",
+        "11.JPG",
+        "12.JPG",
+        "13.JPG",
+        "14.JPG",
+        "16.JPG",
+        "17.JPG",
+        "18.JPG",
+        "19.JPG",
+        "20.JPG",
+        "21.JPG",
+        "22.JPG",
+        "23.JPG",
+        "24.JPG",
+        "25.JPG",
+        "26.JPG",
+        "27.JPG",
+        "28.JPG",
+        "29.JPG",
+        "30.JPG",
+        "31.JPG",
+        "32.JPG",
+        "33.JPG",
+        "34.JPG",
+        "35.JPG",
+        "1.mp4",
+        "36.mp4",
+        "37.mp4",
+        "38.mp4",
+        "39.mp4",
+        "40.mp4",
+        "41.mp4",
+        "42.mp4",
+        "43.mp4",
+        "44.mp4",
+        "2.mp4",
+        "3.mp4",
+        "4.mp4",
+        "5.mp4",
+        "6.mp4",
+        "7.mp4",
+        "8.mp4",
+        "9.mp4",
+        "10.mp4",
+        "11.mp4",
+        "12.mp4",
+        "13.mp4",
+        "14.mp4",
+        "15.mp4",
+        "16.mp4",
+        "17.mp4",
+        "18.mp4",
+        "19.mp4",
+        "20.mp4",
+        "21.mp4",
+        "22.mp4",
+        "23.mp4",
+        "24.mp4",
+        "25.mp4",
+        "26.mp4",
+        "27.mp4",
+        "28.mp4",
+        "29.mp4",
+        "30.mp4",
+        "31.mp4",
+        "32.mp4",
+        "33.mp4",
+        "34.mp4",
+        "35.mp4",
+      ];
+      let galleryMedia = [];
+      let currentMediaIndex = 0;
+
+      function populateGallery() {
+        galleryMedia = [];
+        document.querySelectorAll(".gallery-row").forEach((row, index) => {
+          for (let i = 0; i < 20; i++) {
+            const item = document.createElement("div");
+            item.classList.add("gallery-item");
+            let media =
+              mediaItems[Math.floor(Math.random() * mediaItems.length)];
+            galleryMedia.push(media);
+            if (media.endsWith(".mp4")) {
+              let video = document.createElement("video");
+              video.src = media;
+              video.muted = true;
+              video.loop = true;
+              video.autoplay = true;
+              video.playsInline = true;
+              item.appendChild(video);
+            } else {
+              let img = document.createElement("img");
+              img.src = media;
+              item.appendChild(img);
+            }
+            let indexCopy = galleryMedia.length - 1;
+            item.addEventListener("click", () => openPopupByIndex(indexCopy));
+            row.appendChild(item);
+          }
+          row.style.animationDuration = `${40 + index * 5}s`;
+        });
+      }
+
+      function openPopup(media) {
+        const popup = document.getElementById("popup");
+        const popupContent = document.getElementById("popup-content");
+        popup.classList.add("active");
+        popupContent.innerHTML = "";
+        if (media.endsWith(".mp4")) {
+          let video = document.createElement("video");
+          video.src = media;
+          video.controls = true;
+          video.autoplay = true;
+          video.muted = false;
+          popupContent.appendChild(video);
+        } else {
+          let img = document.createElement("img");
+          img.src = media;
+          popupContent.appendChild(img);
+        }
+      }
+
+      function openPopupByIndex(index) {
+        currentMediaIndex = index;
+        openPopup(galleryMedia[currentMediaIndex]);
+      }
+
+      // Navigasi tombol
+      document.getElementById("nextBtn").addEventListener("click", () => {
+        currentMediaIndex = (currentMediaIndex + 1) % galleryMedia.length;
+        openPopup(galleryMedia[currentMediaIndex]);
+      });
+      document.getElementById("prevBtn").addEventListener("click", () => {
+        currentMediaIndex =
+          (currentMediaIndex - 1 + galleryMedia.length) % galleryMedia.length;
+        openPopup(galleryMedia[currentMediaIndex]);
+      });
+
+      // Tutup popup media
+      const popup = document.getElementById("popup");
+      const popupContent = document.getElementById("popup-content");
+      document.getElementById("popup-close").addEventListener("click", () => {
+        const video = popupContent.querySelector("video");
+        if (video) {
+          video.pause();
+          video.muted = true;
+          video.currentTime = 0;
+        }
+        popup.classList.remove("active");
+      });
+      popup.addEventListener("click", (e) => {
+        if (e.target === popup) {
+          const video = popupContent.querySelector("video");
+          if (video) {
+            video.pause();
+            video.muted = true;
+            video.currentTime = 0;
+          }
+          popup.classList.remove("active");
+        }
+      });
+
+      // Music
+      const musicBtn = document.getElementById("musicBtn");
+      const bgMusic = document.getElementById("bgMusic");
+      musicBtn.addEventListener("click", () => {
+        if (bgMusic.paused) {
+          bgMusic.play();
+          musicBtn.textContent = "⏸ Pause Music";
+        } else {
+          bgMusic.pause();
+          musicBtn.textContent = "🎵 Play Music";
+        }
+      });
+
+      // Love letter
+      const loveBtn = document.getElementById("loveBtn");
+      const letterPopup = document.getElementById("letterPopup");
+      const letterClose = document.getElementById("letterClose");
+      const letterText = document.getElementById("letterText");
+      const letterContentText = `Dear You,
+
+Under this starry sky, I want to tell you how much you mean to me.
+Every star reminds me of the spark you bring into my life.
+
+With love,
+Me`;
+      let typingTimeout;
+      loveBtn.addEventListener("click", () => {
+        letterPopup.classList.add("active");
+        letterText.textContent = "";
+        let i = 0;
+        function typeWriter() {
+          if (i < letterContentText.length) {
+            letterText.textContent += letterContentText.charAt(i);
+            i++;
+            typingTimeout = setTimeout(typeWriter, 40);
+          }
+        }
+        typeWriter();
+      });
+      letterClose.addEventListener("click", () => {
+        letterPopup.classList.remove("active");
+        clearTimeout(typingTimeout);
+      });
+      letterPopup.addEventListener("click", (e) => {
+        if (e.target === letterPopup) {
+          letterPopup.classList.remove("active");
+          clearTimeout(typingTimeout);
+        }
+      });
+
+      // Jalankan gallery
+      populateGallery();
+    </script>
+  </body>
+</html>
